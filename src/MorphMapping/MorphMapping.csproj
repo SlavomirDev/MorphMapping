@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+	<IsPackable>true</IsPackable>
+    <LangVersion>9.0</LangVersion>
+	<Version>1.0.0</Version>
+	<VersionPrefix>1.0.0</VersionPrefix>
+    <RootNamespace>MorphMapping</RootNamespace>
+    <AssemblyName>MorphMapping</AssemblyName>
+
+	<Authors>SłavoMirDev</Authors>
+    
+    <PackageId>MorphMapping</PackageId>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>mapper;mapping;automapper;object-mapping;reflection</PackageTags>
+    
+	<Description>Reflection-based object mapper for .NET with customizable converters, per-pair hooks and DI-friendly configuration.</Description>
+	
+    <RepositoryType>git</RepositoryType>
+	<RepositoryUrl>https://github.com/SlavomirDev/MorphMapping.git</RepositoryUrl>
+	<PackageProjectUrl>https://github.com/SlavomirDev/MorphMapping</PackageProjectUrl>
+	
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
+  </ItemGroup>
+
+</Project>
