@@ -7,6 +7,11 @@ on:
     branches: ["**"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   test:
     name: Build & test
@@ -38,11 +43,12 @@ jobs:
 
       - name: Test
         run: dotnet test MorphMapping.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory TestResults
-
-      - name: Upload test results
+        
+      - name: Publish Test Report
+        uses: dorny/test-reporter@v1
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: "**/TestResults/*.trx"
-          if-no-files-found: ignore
+          name: API Server Tests
+          path: TestResults/*.trx
+          reporter: dotnet-trx
+          token: ${{ secrets.GITHUB_TOKEN }}
