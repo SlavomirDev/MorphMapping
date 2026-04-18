@@ -7,7 +7,7 @@ namespace MorphMapping
     /// <summary>
     /// Default <see cref="IMapper"/> implementation. The mapper owns no reflection: it seeds a
     /// <see cref="MappingContext"/> with the configured options, resolver, factory and logger,
-    /// then hands control to <see cref="MappingContract.Map"/> which dispatches through
+    /// then hands control to <see cref="MappingContract.Map(object?, object?, MappingContext)"/> which dispatches through
     /// converters and contracts. All real mapping lives in the <see cref="MappingContract"/>
     /// hierarchy. Instances are built through <see cref="MapperBuilder"/> (or the companion
     /// <c>MorphMapping.DependencyInjection</c> package).
@@ -24,7 +24,6 @@ namespace MorphMapping
         }
 
         public TDestination Map<TDestination>(object source, Action<MappingContext>? configureContext = null)
-            where TDestination : class
         {
             if (source is null) throw new ArgumentNullException(nameof(source));
 
@@ -33,7 +32,6 @@ namespace MorphMapping
         }
 
         public TDestination Map<TDestination>(object source, TDestination destination, Action<MappingContext>? configureContext = null)
-            where TDestination : class
         {
             if (source is null) throw new ArgumentNullException(nameof(source));
             if (destination is null) throw new ArgumentNullException(nameof(destination));

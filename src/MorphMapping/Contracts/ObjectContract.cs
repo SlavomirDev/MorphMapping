@@ -9,7 +9,7 @@ namespace MorphMapping
     /// Contract for complex objects: POCOs, DTOs, entities. Owns the full reflection pipeline —
     /// constructor resolution, per-pair configuration lookup, property copy, attribute-level
     /// converter invocation and global/per-pair before/after hooks. Nested values are always
-    /// delegated back through <see cref="MappingContract.Map"/>; instance creation goes
+    /// delegated back through <see cref="MappingContract.Map(object?, object?, MappingContext)"/>; instance creation goes
     /// through <see cref="MappingContext.ObjectFactory"/>.
     /// </summary>
     public class ObjectContract : MappingContract

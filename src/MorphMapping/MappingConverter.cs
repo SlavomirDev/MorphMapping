@@ -34,6 +34,17 @@ namespace MorphMapping
 
     /// <summary>
     /// Declares a converter to be applied to a specific property or class.
+    /// <para>
+    /// When placed on a property, the converter is invoked for that property during copy
+    /// (source value → destination property).
+    /// </para>
+    /// <para>
+    /// When placed on a class, the converter is invoked whenever the mapping pipeline targets
+    /// that class — either as a root destination type or as a nested value — provided the
+    /// source/destination types are compatible with the converter. A converter declared on
+    /// the destination type wins over one declared on the source type, and both win over any
+    /// matching global converter registered in <see cref="MapperOptions.Converters"/>.
+    /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public sealed class MappingConverterAttribute : Attribute
