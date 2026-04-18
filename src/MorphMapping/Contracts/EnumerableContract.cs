@@ -5,10 +5,7 @@ using System.Collections.Generic;
 namespace MorphMapping
 {
     /// <summary>
-    /// Contract for generic enumerable / collection destinations (not dictionaries). Builds either
-    /// a <see cref="List{T}"/> or, if the destination type is concrete with a matching <c>Add</c>
-    /// method, an instance of that type. Nested element conversions go through
-    /// <see cref="MappingContext.Convert"/>.
+    /// Contract for generic enumerable / collection destinations (not dictionaries).
     /// </summary>
     public sealed class EnumerableContract : MappingContract
     {

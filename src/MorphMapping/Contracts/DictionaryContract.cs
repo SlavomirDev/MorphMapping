@@ -6,8 +6,6 @@ namespace MorphMapping
 {
     /// <summary>
     /// Contract for dictionary destinations (anything implementing <see cref="IDictionary{TKey,TValue}"/>).
-    /// Iterates the source as a sequence of <c>Key</c>/<c>Value</c> pairs and uses
-    /// <see cref="MappingContext.Convert"/> to convert both sides.
     /// </summary>
     public sealed class DictionaryContract : MappingContract
     {
