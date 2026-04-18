@@ -1,8 +1,11 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+
 using MorphMapping.DependencyInjection;
 using MorphMapping.Tests.Models;
+
+using System;
+using System.Collections.Generic;
+
 using Xunit;
 
 namespace MorphMapping.Tests
@@ -13,7 +16,11 @@ namespace MorphMapping.Tests
         {
             var services = new ServiceCollection();
             services.AddLogging();
-            services.AddMorphMapper(configure, options);
+
+            // AddMorphMapper now returns the MapperBuilder directly so fluent per-pair
+            // configuration can be chained after options-level configuration.
+            var builder = services.AddMorphMapper(options);
+            configure?.Invoke(builder);
 
             var provider = services.BuildServiceProvider();
             return provider.GetRequiredService<IMapper>();
@@ -279,6 +286,48 @@ namespace MorphMapping.Tests
 
             Assert.Equal("HELLO", dest.Title);
             Assert.Equal("world", dest.Subtitle);
+        }
+
+        [Fact]
+        public void ClassLevelConverter_OnDestination_IsUsedAtRoot()
+        {
+            var mapper = BuildMapper();
+            var dto = mapper.Map<MoneyDtoClassAttr>(new Money { Amount = 9.99m, Currency = "EUR" });
+
+            Assert.Equal("9,99 EUR (class)", dto.Formatted);
+        }
+
+        [Fact]
+        public void ClassLevelConverter_OnDestination_IsUsedForNestedProperty()
+        {
+            var mapper = BuildMapper();
+            var dest = mapper.Map<DestWithClassAttrNested>(new SourceWithMoney
+            {
+                Price = new Money { Amount = 1.5m, Currency = "USD" },
+            });
+
+            Assert.NotNull(dest.Price);
+            Assert.Equal("1,50 USD (class)", dest.Price!.Formatted);
+        }
+
+        [Fact]
+        public void ClassLevelConverter_OnSource_IsUsedAtRoot()
+        {
+            var mapper = BuildMapper();
+            var dto = mapper.Map<MoneyDto>(new LegacyMoney { Amount = 42.0m, Currency = "PLN" });
+
+            Assert.Equal("LEGACY 42,00 PLN", dto.Formatted);
+        }
+
+        [Fact]
+        public void ClassLevelConverter_WinsOverMatchingGlobalConverter()
+        {
+            // Register a global Money→MoneyDtoClassAttr converter, then confirm the class-level
+            // attribute converter on MoneyDtoClassAttr still wins.
+            var mapper = BuildMapper(options: opts => opts.Converters.Add(new GlobalMoneyToDtoClassAttrConverter()));
+            var dto = mapper.Map<MoneyDtoClassAttr>(new Money { Amount = 7m, Currency = "CHF" });
+
+            Assert.Equal("7,00 CHF (class)", dto.Formatted);
         }
 
         [Fact]

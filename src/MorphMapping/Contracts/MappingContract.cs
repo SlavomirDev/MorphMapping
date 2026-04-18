@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 
 namespace MorphMapping
 {
@@ -27,9 +28,10 @@ namespace MorphMapping
         public abstract object? Map(object? source, object? destination, MappingContext context);
 
         /// <summary>
-        /// Central conversion dispatcher. Checks global converters first, then resolves and
-        /// delegates to the target contract. Called by <see cref="Mapper"/> for the root call
-        /// and by contracts for nested / child values.
+        /// Central conversion dispatcher. Checks class-level <see cref="MappingConverterAttribute"/>
+        /// first (destination wins over source), then global converters, and finally resolves and
+        /// delegates to the target contract. Called by <see cref="Mapper"/> for the root call and
+        /// by contracts for nested / child values.
         /// </summary>
         protected internal static object? Map(
             object? source,
@@ -46,6 +48,24 @@ namespace MorphMapping
             }
 
             var sourceType = source.GetType();
+
+            // Class-level converters declared via [MappingConverter] on the destination or source
+            // type. More specific than globals (they are tied to concrete types), so they win
+            // over the global converter list below.
+            var classConverter = ResolveClassLevelConverter(sourceType, destinationType);
+            if (classConverter != null)
+            {
+                try
+                {
+                    return classConverter.Convert(source, destination, context);
+                }
+                catch (Exception ex)
+                {
+                    context.HandleError(ex, $"Class-level converter '{classConverter.GetType().Name}' threw.");
+                    if (context.Options.ThrowOnError) throw;
+                    return MappingContext.GetDefault(destinationType);
+                }
+            }
 
             // Global converters (ordered, first match wins). Attribute-level converters on
             // individual properties are the concern of the property-copying contract — they
@@ -71,5 +91,44 @@ namespace MorphMapping
             var contract = context.Resolver.ResolveContract(destinationType);
             return contract.Map(source, destination, context);
         }
+
+        /// <summary>
+        /// Resolves a <see cref="MappingConverter"/> declared via
+        /// <see cref="MappingConverterAttribute"/> on either the destination type (preferred,
+        /// matching the destination-property-wins convention) or the source type. The returned
+        /// converter must be compatible with the actual <paramref name="sourceType"/> and
+        /// <paramref name="destinationType"/>; otherwise it is ignored.
+        /// </summary>
+        private static MappingConverter? ResolveClassLevelConverter(Type sourceType, Type destinationType)
+        {
+            var destAttr = destinationType.GetCustomAttribute<MappingConverterAttribute>(inherit: true);
+            if (destAttr != null)
+            {
+                var converter = TryCreateConverter(destAttr.ConverterType);
+                if (converter != null &&
+                    converter.SourceType.IsAssignableFrom(sourceType) &&
+                    destinationType.IsAssignableFrom(converter.DestinationType))
+                {
+                    return converter;
+                }
+            }
+
+            var srcAttr = sourceType.GetCustomAttribute<MappingConverterAttribute>(inherit: true);
+            if (srcAttr != null)
+            {
+                var converter = TryCreateConverter(srcAttr.ConverterType);
+                if (converter != null &&
+                    converter.SourceType.IsAssignableFrom(sourceType) &&
+                    destinationType.IsAssignableFrom(converter.DestinationType))
+                {
+                    return converter;
+                }
+            }
+
+            return null;
+        }
+
+        private static MappingConverter? TryCreateConverter(Type converterType)
+            => Activator.CreateInstance(converterType) as MappingConverter;
     }
 }

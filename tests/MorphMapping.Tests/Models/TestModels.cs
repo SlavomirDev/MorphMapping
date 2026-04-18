@@ -180,4 +180,59 @@ namespace MorphMapping.Tests.Models
 
         public string Subtitle { get; set; } = string.Empty;
     }
+
+    // Class-level converter tests: attribute placed on the destination class.
+    public class MoneyToDtoClassAttrConverter : MappingConverter<Money, MoneyDtoClassAttr>
+    {
+        public override MoneyDtoClassAttr? Convert(Money? source, MoneyDtoClassAttr? destination, MappingContext context)
+        {
+            if (source is null) return null;
+            var dest = destination ?? new MoneyDtoClassAttr();
+            dest.Formatted = $"{source.Amount:F2} {source.Currency} (class)";
+            return dest;
+        }
+    }
+
+    [MappingConverter(typeof(MoneyToDtoClassAttrConverter))]
+    public class MoneyDtoClassAttr
+    {
+        public string Formatted { get; set; } = string.Empty;
+    }
+
+    // Same source/destination pair as the class-level converter — used to prove the class-level
+    // attribute wins over an explicitly registered global converter for the same pair.
+    public class GlobalMoneyToDtoClassAttrConverter : MappingConverter<Money, MoneyDtoClassAttr>
+    {
+        public override MoneyDtoClassAttr? Convert(Money? source, MoneyDtoClassAttr? destination, MappingContext context)
+        {
+            if (source is null) return null;
+            var dest = destination ?? new MoneyDtoClassAttr();
+            dest.Formatted = $"{source.Amount:F2} {source.Currency} (global)";
+            return dest;
+        }
+    }
+
+    public class DestWithClassAttrNested
+    {
+        public MoneyDtoClassAttr? Price { get; set; }
+    }
+
+    // Class-level converter declared on the source type.
+    public class LegacyMoneyToDtoConverter : MappingConverter<LegacyMoney, MoneyDto>
+    {
+        public override MoneyDto? Convert(LegacyMoney? source, MoneyDto? destination, MappingContext context)
+        {
+            if (source is null) return null;
+            var dest = destination ?? new MoneyDto();
+            dest.Formatted = $"LEGACY {source.Amount:F2} {source.Currency}";
+            return dest;
+        }
+    }
+
+    [MappingConverter(typeof(LegacyMoneyToDtoConverter))]
+    public class LegacyMoney
+    {
+        public decimal Amount { get; set; }
+        public string Currency { get; set; } = "USD";
+    }
 }
