@@ -16,7 +16,7 @@ The library itself has no dependency on `Microsoft.Extensions.DependencyInjectio
 - Property renaming and ignoring (including the `[IgnoreMapping]` attribute).
 - Custom value providers for specific destination properties.
 - `Before`/`After` hooks at both per-pair and global levels.
-- Custom converters: global (`MapperOptions.Converters`) and per-property via `[MappingConverter(typeof(MyConverter))]`.
+- Custom converters: global (`MapperOptions.Converters`), per-property *and* per-class via `[MappingConverter(typeof(MyConverter))]`.
 - Constructor-based mapping by parameter name.
 - Built-in support for `Nullable<T>`, enums (string↔enum, int↔enum), numeric conversions, `IDictionary`, `IEnumerable`.
 - `MappingContext` to pass arbitrary state through the mapping pipeline.
@@ -49,7 +49,10 @@ var dest = mapper.Map<DestPerson>(new SourcePerson { Name = "Alice", Age = 30 })
 
 ### With `Microsoft.Extensions.DependencyInjection`
 
-Install `MorphMapping.DependencyInjection` and register the mapper as a singleton:
+Install `MorphMapping.DependencyInjection` and register the mapper as a singleton.
+`AddMorphMapper` takes an optional `Action<MapperOptions>` for options-level
+configuration and **returns the `MapperBuilder`** so per-pair configuration can
+be chained fluently:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -59,20 +62,24 @@ using MorphMapping.DependencyInjection;
 var services = new ServiceCollection();
 services.AddLogging();
 
-services.AddMorphMapper(
-    configure: builder => builder
-        .Configure<SourcePerson, DestPerson>(cfg => cfg
-            .MapProperty(nameof(SourcePerson.Name), nameof(DestPerson.FullName))
-            .IgnoreProperty(nameof(DestPerson.SecretCode))),
-    configureOptions: opts =>
+services
+    .AddMorphMapper(opts =>
     {
         opts.ThrowOnError = true;
         opts.Converters.Add(new MoneyToDtoConverter());
-    });
+    })
+    .Configure<SourcePerson, DestPerson>(cfg => cfg
+        .MapProperty(nameof(SourcePerson.Name), nameof(DestPerson.FullName))
+        .IgnoreProperty(nameof(DestPerson.SecretCode)));
 
 var provider = services.BuildServiceProvider();
 var mapper = provider.GetRequiredService<IMapper>();
 ```
+
+The options-level lambda runs first (before any builder actions) and always
+sees a fresh `MapperOptions`. Any `.Configure<...>()` chained after
+`AddMorphMapper` is picked up lazily when the mapper is materialized from the
+container, so call order is forgiving.
 
 ### Mapping into an existing instance
 
@@ -137,7 +144,7 @@ public sealed class MoneyToDtoConverter : MappingConverter<Money, MoneyDto>
     }
 }
 
-services.AddMorphMapper(configureOptions: opts => opts.Converters.Add(new MoneyToDtoConverter()));
+services.AddMorphMapper(opts => opts.Converters.Add(new MoneyToDtoConverter()));
 ```
 
 ### Per-property converter via attribute
@@ -155,6 +162,46 @@ public class DestDto
     public string Title { get; set; } = string.Empty;
 }
 ```
+
+### Per-class converter via attribute
+
+`[MappingConverter]` can also be placed on a *class*. When the pipeline targets
+that class as a destination (root-level, nested property, collection item),
+the attached converter is used instead of the default object-copy flow — no
+global registration required. The attribute can equally be placed on a source
+class to redirect everything *leaving* that type through a converter.
+
+Precedence, from most- to least-specific:
+
+1. per-property `[MappingConverter]` on the destination property
+2. per-class `[MappingConverter]` on the destination type
+3. per-class `[MappingConverter]` on the source type
+4. global converters from `MapperOptions.Converters`
+5. default contract (`ObjectContract`, `EnumContract`, etc.)
+
+```csharp
+public sealed class MoneyToDtoConverter : MappingConverter<Money, MoneyDto>
+{
+    public override MoneyDto? Convert(Money? source, MoneyDto? destination, MappingContext context)
+    {
+        if (source is null) return null;
+        var dto = destination ?? new MoneyDto();
+        dto.Formatted = $"{source.Amount:F2} {source.Currency}";
+        return dto;
+    }
+}
+
+// Anything mapped *into* MoneyDto (root or nested) uses MoneyToDtoConverter.
+[MappingConverter(typeof(MoneyToDtoConverter))]
+public class MoneyDto
+{
+    public string Formatted { get; set; } = string.Empty;
+}
+```
+
+The converter's declared `SourceType` / `DestinationType` still have to be
+compatible with the actual runtime types — mismatched attributes are safely
+ignored and the pipeline falls through to the next rule.
 
 ### Ignoring a property via attribute
 
@@ -187,18 +234,3 @@ public class Dto
 - `IEnumerable<T>`, `ICollection<T>`, `List<T>` — populated via `Add`.
 - `IDictionary<TKey, TValue>` — iterated as `Key`/`Value` pairs and added via `Add(key, value)`.
 - Arbitrary classes/structs — via `ObjectContract`: reflective property walk with support for constructor-by-name.
-
-## Compatibility
-
-The core library targets `netstandard2.1` with `LangVersion=9.0`. This intentionally excludes:
-
-- file-scoped namespaces (C# 10),
-- global usings (C# 10),
-- collection expressions (C# 12),
-- `ArgumentNullException.ThrowIfNull` (.NET 6+),
-
-and other features introduced later. The test project uses `net6.0` for xUnit; the core library itself does not depend on it.
-
-## License
-
-MIT.
