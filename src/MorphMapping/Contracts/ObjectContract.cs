@@ -308,7 +308,20 @@ namespace MorphMapping
                 }
             }
 
-            return Map(rawValue, destinationProperty.PropertyType, null, context);
+            // If the raw value is not null and its actual type is a subtype of the destination property type,
+            // use the actual type from the source to preserve polymorphic types.
+            // This prevents attempting to instantiate abstract classes.
+            var targetType = destinationProperty.PropertyType;
+            if (rawValue != null)
+            {
+                var sourceType = rawValue.GetType();
+                if (targetType.IsAssignableFrom(sourceType))
+                {
+                    targetType = sourceType;
+                }
+            }
+
+            return Map(rawValue, targetType, null, context);
         }
 
         private static PropertyInfo? FindSourceProperty(ObjectContract? sourceContract, object source, string name)

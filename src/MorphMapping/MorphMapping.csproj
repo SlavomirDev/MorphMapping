@@ -3,24 +3,25 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
-	<IsPackable>true</IsPackable>
+    <IsPackable>true</IsPackable>
     <LangVersion>9.0</LangVersion>
-	<Version>1.1.0</Version>
-	<VersionPrefix>1.1.0</VersionPrefix>
+    <Version>1.1.1</Version>
+    <VersionPrefix>1.1.1</VersionPrefix>
     <RootNamespace>MorphMapping</RootNamespace>
     <AssemblyName>MorphMapping</AssemblyName>
 
-	<Authors>SłavoMirDev</Authors>
+    <Authors>SłavoMirDev</Authors>
     
     <PackageId>MorphMapping</PackageId>
-	<PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>mapper;mapping;automapper;object-mapping;reflection</PackageTags>
+    <PackageProjectUrl>https://github.com/SlavomirDev/MorphMapping</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     
-	<Description>Reflection-based object mapper for .NET with customizable converters, per-pair hooks and DI-friendly configuration.</Description>
+    <Description>Reflection-based object mapper for .NET with customizable converters, per-pair hooks and DI-friendly configuration.</Description>
 	
     <RepositoryType>git</RepositoryType>
-	<RepositoryUrl>https://github.com/SlavomirDev/MorphMapping.git</RepositoryUrl>
-	<PackageProjectUrl>https://github.com/SlavomirDev/MorphMapping</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SlavomirDev/MorphMapping.git</RepositoryUrl>
 	
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
