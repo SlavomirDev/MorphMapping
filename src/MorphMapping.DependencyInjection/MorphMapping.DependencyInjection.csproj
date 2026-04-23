@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <LangVersion>9.0</LangVersion>
-    <Version>1.1.1</Version>
-    <VersionPrefix>1.1.1</VersionPrefix>
+    <Version>1.1.2</Version>
+    <VersionPrefix>1.1.2</VersionPrefix>
     <RootNamespace>MorphMapping.DependencyInjection</RootNamespace>
     <AssemblyName>MorphMapping.DependencyInjection</AssemblyName>
 

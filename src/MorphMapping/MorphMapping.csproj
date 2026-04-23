@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <LangVersion>9.0</LangVersion>
-    <Version>1.1.1</Version>
-    <VersionPrefix>1.1.1</VersionPrefix>
+    <Version>1.1.2</Version>
+    <VersionPrefix>1.1.2</VersionPrefix>
     <RootNamespace>MorphMapping</RootNamespace>
     <AssemblyName>MorphMapping</AssemblyName>
 
@@ -15,7 +15,6 @@
     <PackageId>MorphMapping</PackageId>
     <PackageTags>mapper;mapping;automapper;object-mapping;reflection</PackageTags>
     <PackageProjectUrl>https://github.com/SlavomirDev/MorphMapping</PackageProjectUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     
     <Description>Reflection-based object mapper for .NET with customizable converters, per-pair hooks and DI-friendly configuration.</Description>

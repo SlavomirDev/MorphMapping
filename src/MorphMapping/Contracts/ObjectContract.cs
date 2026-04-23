@@ -226,9 +226,12 @@ namespace MorphMapping
         {
             foreach (var destProp in Properties)
             {
-                if (!destProp.CanWrite) continue;
-                if (destProp.GetCustomAttribute<MappingIgnoreAttribute>() != null) continue;
-                if (pairConfig != null && pairConfig.IgnoredProperties.Contains(destProp.Name)) continue;
+                if (!destProp.CanWrite)
+                    continue;
+                if (destProp.GetCustomAttribute<MappingIgnoreAttribute>() != null)
+                    continue;
+                if (pairConfig != null && pairConfig.IgnoredProperties.Contains(destProp.Name))
+                    continue;
 
                 // Per-pair value provider short-circuits everything else.
                 if (pairConfig != null && pairConfig.ValueProviders.TryGetValue(destProp.Name, out var provider))
@@ -236,7 +239,7 @@ namespace MorphMapping
                     try
                     {
                         var raw = provider.DynamicInvoke(source);
-                        destProp.SetValue(destination, ConvertPropertyValue(raw, destProp, context));
+                        destProp.SetValue(destination, raw);
                     }
                     catch (Exception ex)
                     {

@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using MorphMapping.DependencyInjection;
 using MorphMapping.Tests.Models;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 using System;
 using System.Collections.Generic;
 
